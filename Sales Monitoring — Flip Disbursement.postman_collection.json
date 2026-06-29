@@ -1,0 +1,1611 @@
+{
+  "info": {
+    "_postman_id": "a9004add-321a-4c1f-a8a9-90c84ccfaa50",
+    "name": "Sales Monitoring — Flip Disbursement",
+    "description": "Koleksi lengkap API testing untuk project Sales Monitoring dengan integrasi Flip for Business.\n\n## Setup\n1. Import collection ini ke Postman\n2. Buat Environment baru dengan variabel berikut:\n   - `base_url` → `http://localhost:8000/api`\n   - `token` → (kosong, akan terisi otomatis setelah login)\n   - `admin_token` → (kosong, akan terisi otomatis setelah login admin)\n   - `sales_token` → (kosong, akan terisi otomatis setelah login sales)\n\n## Alur Testing\n1. Auth → Register / Login\n2. Admin: Kelola produk, pelanggan, target\n3. Sales: Input transaksi\n4. Admin: Generate & disburse komisi\n5. Webhook: Simulasi callback Flip",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24787861"
+  },
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    if (res.token) pm.collectionVariables.set('token', res.token);",
+                  "    pm.test('Register berhasil', () => pm.response.to.have.status(201));",
+                  "} else {",
+                  "    pm.test('Register response: ' + pm.response.code, () => {});",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama\": \"Admin Test\",\n    \"email\": \"admin@test.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Sales",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama\": \"Sales Test\",\n    \"email\": \"sales@test.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\",\n    \"role\": \"sales\",\n    \"bank\": \"BCA\",\n    \"nomor_rekening\": \"1234567890\",\n    \"nama_rekening\": \"Sales Test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const t = res.token || res.data?.token || res.access_token;",
+                  "    if (t) {",
+                  "        pm.collectionVariables.set('admin_token', t);",
+                  "        pm.collectionVariables.set('token', t);",
+                  "        pm.test('Login admin berhasil, token tersimpan', () => pm.expect(t).to.be.a('string'));",
+                  "    }",
+                  "} else {",
+                  "    pm.test('Login gagal: ' + pm.response.code, () => pm.expect(pm.response.code).to.equal(200));",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@test.com\",\n    \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Sales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const t = res.token || res.data?.token || res.access_token;",
+                  "    if (t) {",
+                  "        pm.collectionVariables.set('sales_token', t);",
+                  "        pm.test('Login sales berhasil, token tersimpan', () => pm.expect(t).to.be.a('string'));",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"sales@test.com\",\n    \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', '');",
+                  "    pm.test('Logout berhasil, token dihapus', () => {});",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "📦 Products (Admin)",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "{{product_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const id = res.id || res.data?.id;",
+                  "    if (id) pm.collectionVariables.set('product_id', String(id));",
+                  "    pm.test('Produk berhasil dibuat', () => pm.response.to.have.status(pm.response.code));",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama_produk\": \"Produk Test A\",\n    \"harga\": 500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama_produk\": \"Produk Test A (Updated)\",\n    \"harga\": 550000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "{{product_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/{{product_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "{{product_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👥 Customers (Admin)",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers",
+                "{{customer_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const id = res.id || res.data?.id;",
+                  "    if (id) pm.collectionVariables.set('customer_id', String(id));",
+                  "    pm.test('Customer berhasil dibuat', () => {});",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama_customer\": \"Santoso\",\n    \"no_hp\": \"081234567890\",\n    \"alamat\": \"Jl. Contoh No. 1, Jakarta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nama_customer\": \"Santoso (Updated)\",\n    \"no_hp\": \"081234567899\",\n    \"alamat\": \"Jl. Contoh No. 1, Bandung\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers",
+                "{{customer_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers/{{customer_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers",
+                "{{customer_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🎯 Targets (Admin)",
+      "item": [
+        {
+          "name": "Get All Targets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/targets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "targets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Target by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/targets/{{target_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "targets",
+                "{{target_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Target",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const id = res.id || res.data?.id;",
+                  "    if (id) pm.collectionVariables.set('target_id', String(id));",
+                  "    pm.test('Target berhasil dibuat', () => {});",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user_id\": 1,\n    \"periode\": \"2026-05\",\n    \"target_nominal\": 20000000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/targets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "targets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Target",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"periode\": \"2026-05\",\n    \"target_nominal\": 10000000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/targets/{{target_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "targets",
+                "{{target_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Target",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/targets/{{target_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "targets",
+                "{{target_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🛒 Transactions",
+      "item": [
+        {
+          "name": "Get All Transactions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transaction by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transaction_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Transaction (Sales)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const id = res.id || res.data?.id;",
+                  "    if (id) pm.collectionVariables.set('transaction_id', String(id));",
+                  "    pm.test('Transaksi berhasil dibuat', () => {});",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sales_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 1,\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"jumlah\": 5,\n      \"harga\": 100000\n    },\n    {\n      \"product_id\": 2,\n      \"jumlah\": 4,\n      \"harga\": 50000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Transaction (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "transactions",
+                "{{transaction_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💰 Commissions",
+      "item": [
+        {
+          "name": "Get All Commissions (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/commissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export Commissions (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Export berhasil (200)', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/commissions/export?periode=2026-05",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "periode",
+                  "value": "2026-05"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Commissions (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Generate commission response', () => {",
+                  "    pm.expect([200, 201, 422]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"periode\": \"2026-05\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/commissions/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions",
+                "generate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Commission by ID (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    const id = res.id || res.data?.id;",
+                  "    if (id) pm.collectionVariables.set('commission_id', String(id));",
+                  "    pm.test('Commission ditemukan', () => {});",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/commissions/{{commission_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions",
+                "{{commission_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "My Commissions (Sales)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{sales_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/my-commissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "my-commissions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏦 Disbursement (Flip)",
+      "item": [
+        {
+          "name": "Inquiry Commission (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Inquiry berhasil — Rekening terdaftar di Flip', () => {",
+                  "        pm.expect(res.message).to.include('di-verify');",
+                  "    });",
+                  "} else if (pm.response.code === 422) {",
+                  "    pm.test('422 — ' + (res.message || 'validasi gagal'), () => {});",
+                  "} else {",
+                  "    pm.test('Response: ' + pm.response.code + ' — ' + (res.message || ''), () => {});",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/commissions/{{commission_id}}/inquiry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions",
+                "{{commission_id}}",
+                "inquiry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disburse Commission (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (pm.response.code === 200) {",
+                  "    const did = res.disbursement_id;",
+                  "    if (did) {",
+                  "        pm.collectionVariables.set('disbursement_id', String(did));",
+                  "        pm.test('Disbursement berhasil, ID tersimpan: ' + did, () => {});",
+                  "    }",
+                  "} else if (pm.response.code === 422) {",
+                  "    pm.test('422 — ' + (res.message || 'validasi gagal'), () => {});",
+                  "} else {",
+                  "    pm.test('Response: ' + pm.response.code + ' — ' + (res.message || ''), () => {});",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/commissions/{{commission_id}}/disburse",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "commissions",
+                "{{commission_id}}",
+                "disburse"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Disbursement Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status disbursement berhasil diambil', () => {",
+                  "    pm.expect([200, 404, 500]).to.include(pm.response.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/disbursements/{{disbursement_id}}/check",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "disbursements",
+                "{{disbursement_id}}",
+                "check"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔔 Webhook Flip (Simulasi)",
+      "item": [
+        {
+          "name": "Webhook Disbursement — DONE (Sukses)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook diterima (200)', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Pesan: ' + res.message, () => pm.expect(res.message).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "GANTI_DENGAN_FLIP_VALIDATION_TOKEN_KAMU",
+                  "description": "Ambil dari dashboard Flip → API Setting → Validation Token"
+                },
+                {
+                  "key": "data",
+                  "value": "{\"id\":\"FT001234567890\",\"amount\":150000,\"status\":\"DONE\",\"timestamp\":\"2025-05-24 10:30:00\",\"bank_code\":\"bca\",\"account_number\":\"1234567890\",\"beneficiary_name\":\"Budi Santoso\",\"remark\":\"Komisi 2025-05\",\"receipt\":\"https://flip.id/receipt/test.jpg\",\"time_served\":\"2025-05-24 10:30:15\",\"fee\":4000,\"reason\":null}",
+                  "description": "JSON string payload dari Flip. Ganti id dengan disbursement_id yang ada di DB kamu."
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook/flip/disbursement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhook",
+                "flip",
+                "disbursement"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook Disbursement — CANCELLED (Gagal)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook cancelled diterima (200)', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "GANTI_DENGAN_FLIP_VALIDATION_TOKEN_KAMU"
+                },
+                {
+                  "key": "data",
+                  "value": "{\"id\":\"FT001234567890\",\"amount\":150000,\"status\":\"CANCELLED\",\"timestamp\":\"2025-05-24 10:30:00\",\"bank_code\":\"bca\",\"account_number\":\"1234567890\",\"beneficiary_name\":\"Budi Santoso\",\"remark\":\"Komisi 2025-05\",\"receipt\":null,\"time_served\":null,\"fee\":4000,\"reason\":\"Rekening tidak ditemukan\"}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook/flip/disbursement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhook",
+                "flip",
+                "disbursement"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook Disbursement — Token Salah (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Token salah diblok (403)', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "token_salah_123"
+                },
+                {
+                  "key": "data",
+                  "value": "{\"id\":\"FT999\",\"status\":\"DONE\"}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook/flip/disbursement",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhook",
+                "flip",
+                "disbursement"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook Inquiry — SUCCESS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook inquiry diterima (200)', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "GANTI_DENGAN_FLIP_VALIDATION_TOKEN_KAMU"
+                },
+                {
+                  "key": "data",
+                  "value": "{\"inquiry_key\":\"inquiry-1\",\"account_number\":\"1234567890\",\"bank_code\":\"bca\",\"account_holder\":\"Budi Santoso\",\"status\":\"SUCCESS\"}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook/flip/inquiry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhook",
+                "flip",
+                "inquiry"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Webhook Inquiry — INVALID_ACCOUNT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook invalid account diterima (200)', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "GANTI_DENGAN_FLIP_VALIDATION_TOKEN_KAMU"
+                },
+                {
+                  "key": "data",
+                  "value": "{\"inquiry_key\":\"inquiry-1\",\"account_number\":\"0000000000\",\"bank_code\":\"bca\",\"account_holder\":null,\"status\":\"INVALID_ACCOUNT\"}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/webhook/flip/inquiry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "webhook",
+                "flip",
+                "inquiry"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Simulasi callback dari Flip ke server kamu.\nGunakan ini untuk testing lokal tanpa menunggu response nyata dari Flip.\n\n⚠️  Pastikan FLIP_VALIDATION_TOKEN di .env sudah diisi sebelum menjalankan request ini."
+    },
+    {
+      "name": "📊 Dashboard",
+      "item": [
+        {
+          "name": "Dashboard Admin",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/dashboard/admin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "dashboard",
+                "admin"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "sales_token",
+      "value": ""
+    },
+    {
+      "key": "commission_id",
+      "value": "1"
+    },
+    {
+      "key": "transaction_id",
+      "value": "1"
+    },
+    {
+      "key": "product_id",
+      "value": "1"
+    },
+    {
+      "key": "customer_id",
+      "value": "1"
+    },
+    {
+      "key": "target_id",
+      "value": "1"
+    },
+    {
+      "key": "disbursement_id",
+      "value": ""
+    }
+  ]
+}
