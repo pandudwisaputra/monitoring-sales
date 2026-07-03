@@ -58,6 +58,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ],
     ]);
 
+    // Manajemen Customer
+    Route::resource('/admin/customers', App\Http\Controllers\AdminCustomerController::class, [
+        'names' => [
+            'index' => 'admin.customers.index',
+            'create' => 'admin.customers.create',
+            'store' => 'admin.customers.store',
+            'show' => 'admin.customers.show',
+            'edit' => 'admin.customers.edit',
+            'update' => 'admin.customers.update',
+            'destroy' => 'admin.customers.destroy',
+        ],
+    ]);
+
     // Manajemen Produk
     Route::resource('/admin/products', App\Http\Controllers\AdminProductController::class, [
         'names' => [

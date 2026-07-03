@@ -25,6 +25,13 @@
         </a>
     </li>
 
+    <li class="nav-item {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.customers.index') }}">
+            <i class="fas fa-fw fa-address-book"></i>
+            <span>Manajemen Customer</span>
+        </a>
+    </li>
+
     <li class="nav-item {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('admin.transactions.index') }}">
             <i class="fas fa-fw fa-shopping-cart"></i>
