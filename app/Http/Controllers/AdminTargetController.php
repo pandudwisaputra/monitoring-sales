@@ -10,13 +10,27 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
+/**
+ * Mengelola target penjualan bulanan (nominal target) untuk masing-masing pengguna dengan peran Sales.
+ */
 class AdminTargetController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $targets = Target::with('user')->latest()->paginate(15);
+        $query = Target::with('user');
 
-        return view('admin.targets.index', compact('targets'));
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
+        if ($request->filled('periode')) {
+            $query->where('periode', $request->input('periode'));
+        }
+
+        $targets = $query->latest()->paginate(5)->appends($request->query());
+        $sales = User::where('role', 'sales')->orderBy('nama')->get();
+
+        return view('admin.targets.index', compact('targets', 'sales'));
     }
 
     public function create(): View

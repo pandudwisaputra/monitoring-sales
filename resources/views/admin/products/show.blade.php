@@ -1,3 +1,4 @@
+{{-- Detail Produk Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Produk')

@@ -20,6 +20,30 @@
     @endif
 
     <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.transactions.index') }}" class="form-inline">
+                <select name="user_id" class="form-control mr-2">
+                    <option value="">-- Semua Sales --</option>
+                    @foreach($sales as $sale)
+                        <option value="{{ $sale->id }}" {{ request('user_id') == $sale->id ? 'selected' : '' }}>{{ $sale->nama }}</option>
+                    @endforeach
+                </select>
+                <select name="customer_id" class="form-control mr-2">
+                    <option value="">-- Semua Pelanggan --</option>
+                    @foreach($customers as $customer)
+                        <option value="{{ $customer->id }}" {{ request('customer_id') == $customer->id ? 'selected' : '' }}>{{ $customer->nama_customer }}</option>
+                    @endforeach
+                </select>
+                <input type="date" name="tanggal" class="form-control mr-2" value="{{ request('tanggal') }}">
+                <button type="submit" class="btn btn-primary mr-2">Filter</button>
+                @if(request()->anyFilled(['user_id', 'customer_id', 'tanggal']))
+                    <a href="{{ route('admin.transactions.index') }}" class="btn btn-secondary">Reset</a>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Daftar Transaksi</h6>
         </div>

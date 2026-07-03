@@ -1,5 +1,7 @@
 <?php
 
+// Service untuk menangani integrasi API Flip (cek saldo, verifikasi rekening, dan pencairan komisi/disbursement).
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
@@ -7,25 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-/**
- * FlipPaymentService
- *
- * Handles semua komunikasi ke Flip for Business API.
- *
- * Base URL:
- *   Sandbox    : https://bigflip.id/big_sandbox_api
- *   Production : https://bigflip.id/api
- *
- * Auth: Basic Auth — secret_key sebagai username, password kosong
- *
- * Endpoint reference (dari docs.flip.id):
- *   GET  /v3/general/balance                    — cek saldo
- *   GET  /v2/general/banks                      — daftar bank
- *   POST /v2/disbursement/bank-account-inquiry  — validasi rekening
- *   POST /v3/disbursement                       — buat transfer
- *   GET  /v3/get-disbursement?id={id}           — cek status by flip ID
- *   GET  /v3/get-disbursement?idempotency-key={key} — cek status by idempotency key
- */
+// Integrasi API Flip
 class FlipPaymentService
 {
     private string $secretKey;
@@ -41,19 +25,7 @@ class FlipPaymentService
         $this->baseUrlV3       = config('flip.base_url') . '/v3';
     }
 
-    // =========================================================================
-    // 1. GET BALANCE
-    // Docs: GET /v2/general/balance  ← v2 sesuai docs resmi
-    // URL  : https://bigflip.id/big_sandbox_api/v2/general/balance
-    // =========================================================================
-
-    /**
-     * Cek saldo akun Flip.
-     * Panggil ini sebelum createDisbursement untuk memastikan saldo mencukupi.
-     *
-     * @return array ['balance' => int]
-     * @throws Exception
-     */
+    // Cek saldo akun Flip
     public function getBalance(): array
     {
         try {
@@ -74,18 +46,7 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 1b. LIST BANKS
-    // Docs: GET /v2/general/banks
-    // =========================================================================
-
-    /**
-     * Ambil daftar bank dari Flip.
-     *
-     * @param bool $refresh Paksa ambil data terbaru tanpa cache
-     * @return array<int, array<string, mixed>>
-     * @throws Exception
-     */
+    // Ambil daftar bank Flip (dengan cache)
     public function getBanks(bool $refresh = false): array
     {
         $cacheKey = 'flip:banks';
@@ -103,12 +64,7 @@ class FlipPaymentService
         return $banks;
     }
 
-    /**
-     * Fetch raw bank data from Flip.
-     *
-     * @return array<int, array<string, mixed>>
-     * @throws Exception
-     */
+    // Ambil daftar bank dari API Flip
     private function fetchBanksFromFlip(): array
     {
         try {
@@ -128,22 +84,9 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 2. BANK ACCOUNT INQUIRY
-    // Docs: POST /v2/disbursement/bank-account-inquiry
-    // =========================================================================
 
-    /**
-     * Validasi nomor rekening + ambil nama pemilik rekening.
-     * WAJIB dipanggil sebelum createDisbursement.
-     *
-     * @param string $accountNumber  Nomor rekening tujuan
-     * @param string $bankCode       Kode bank lowercase (bca, bni, bri, mandiri, dll)
-     * @param string $inquiryKey     ID unik untuk matching async callback
-     * @return array
-     *   ['account_number', 'bank_code', 'account_holder', 'status' => 'SUCCESS'|'PENDING']
-     * @throws Exception
-     */
+
+    // Validasi nomor rekening dan nama pemilik
     public function inquiryBankAccount(
         string $accountNumber,
         string $bankCode,
@@ -185,26 +128,9 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 3. CREATE DISBURSEMENT
-    // Docs: POST /v3/disbursement
-    // Header: idempotency-key (wajib, anti double-transfer)
-    // =========================================================================
 
-    /**
-     * Buat transfer ke rekening bank tujuan.
-     *
-     * @param array $data {
-     *   @type string $account_number   Nomor rekening tujuan
-     *   @type string $bank_code        Kode bank lowercase
-     *   @type int    $amount           Nominal dalam rupiah
-     *   @type string $remark           Keterangan transfer (maks 18 karakter)
-     *   @type string $idempotency_key  ID unik per transaksi
-     *   @type string $beneficiary_email Optional
-     * }
-     * @return array ['id', 'status' => 'PENDING', 'amount', 'fee', ...]
-     * @throws Exception
-     */
+
+    // Buat transaksi transfer / disbursement
     public function createDisbursement(array $data): array
     {
         foreach (['account_number', 'bank_code', 'amount', 'idempotency_key'] as $field) {
@@ -259,18 +185,9 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 4. GET DISBURSEMENT BY ID
-    // Docs: GET /v3/get-disbursement?id={flip_transaction_id}
-    // =========================================================================
 
-    /**
-     * Ambil detail + status disbursement by Flip transaction ID.
-     *
-     * @param string $transactionId  Flip transaction ID dari response createDisbursement
-     * @return array ['id', 'status', 'amount', 'fee', 'receipt', 'time_served', ...]
-     * @throws Exception
-     */
+
+    // Cek status transfer berdasarkan Flip ID
     public function getDisbursement(string $transactionId): array
     {
         try {
@@ -295,19 +212,9 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 4b. GET DISBURSEMENT BY IDEMPOTENCY KEY
-    // Docs: GET /v3/get-disbursement?idempotency-key={key}
-    // =========================================================================
 
-    /**
-     * Ambil detail disbursement by idempotency key (merchant's transaction id).
-     * Berguna untuk retry-safe check — tidak perlu simpan Flip transaction ID.
-     *
-     * @param string $idempotencyKey  Nilai idempotency_key yang dipakai saat createDisbursement
-     * @return array
-     * @throws Exception
-     */
+
+    // Cek status transfer berdasarkan Idempotency Key
     public function getDisbursementByIdempotencyKey(string $idempotencyKey): array
     {
         try {
@@ -332,32 +239,17 @@ class FlipPaymentService
         }
     }
 
-    // =========================================================================
-    // 5. VERIFY WEBHOOK TOKEN
-    // =========================================================================
 
-    /**
-     * Verifikasi token dari webhook Flip.
-     * Flip POST form-urlencoded dengan field 'token' dan 'data'.
-     *
-     * @param string $receivedToken  Nilai 'token' dari request body
-     * @return bool
-     */
+
+    // Validasi token webhook Flip
     public function verifyWebhookToken(string $receivedToken): bool
     {
         return hash_equals($this->validationToken, $receivedToken);
     }
 
-    // =========================================================================
-    // HELPER: Map nama bank ke kode Flip (lowercase)
-    // =========================================================================
 
-    /**
-     * Konversi nama bank ke kode bank Flip (wajib lowercase).
-     *
-     * @param string $bankName
-     * @return string
-     */
+
+    // Konversi nama bank ke kode Flip
     public function mapBankCode(string $bankName): string
     {
         $normalizedBankName = strtolower(trim($bankName));

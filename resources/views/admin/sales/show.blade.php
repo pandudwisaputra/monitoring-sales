@@ -1,3 +1,4 @@
+{{-- Detail Sales Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Sales - ' . $sale->nama)

@@ -14,6 +14,10 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             TargetSeeder::class,
             SalesTransactionSeeder::class,
+            SalesDetailSeeder::class,
+            CommissionSeeder::class,
+            CommissionPaymentSeeder::class,
+            PaymentLogSeeder::class,
         ]);
     }
 }

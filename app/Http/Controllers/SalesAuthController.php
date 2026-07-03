@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+/**
+ * Menangani proses autentikasi (login dan logout) khusus untuk pengguna dengan peran Sales.
+ */
 class SalesAuthController extends Controller
 {
     public function create(): View

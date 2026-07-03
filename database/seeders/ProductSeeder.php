@@ -1,33 +1,17 @@
 <?php
-
 namespace Database\Seeders;
-
 use Illuminate\Database\Seeder;
-use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        Product::insert([
-            [
-                'nama_produk' => 'Kulkas LG',
-                'harga' => 12000000,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nama_produk' => 'Mesin Cuci Panasonic',
-                'harga' => 18000000,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nama_produk' => 'TV Samsung',
-                'harga' => 7500000,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        DB::table('products')->insert([
+            ['id' => 1, 'nama_produk' => 'Kulkas LG', 'harga' => 12000000.00, 'created_at' => '2026-06-17 11:57:34', 'updated_at' => '2026-06-17 11:57:34'],
+            ['id' => 2, 'nama_produk' => 'Mesin Cuci Panasonic', 'harga' => 18000000.00, 'created_at' => '2026-06-17 11:57:34', 'updated_at' => '2026-06-17 11:57:34'],
+            ['id' => 3, 'nama_produk' => 'TV Samsung', 'harga' => 7500000.00, 'created_at' => '2026-06-17 11:57:34', 'updated_at' => '2026-06-17 11:57:34'],
+            ['id' => 4, 'nama_produk' => 'AC Sharp 1PK', 'harga' => 5500000.00, 'created_at' => '2026-06-17 11:57:34', 'updated_at' => '2026-06-17 11:57:34']
         ]);
     }
 }

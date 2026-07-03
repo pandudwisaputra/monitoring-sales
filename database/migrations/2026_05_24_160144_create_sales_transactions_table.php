@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->decimal('total_harga', 15, 2);
+            $table->decimal('total_harga', 15, 2)->default(0);
 
             $table->date('tanggal_transaksi');
 

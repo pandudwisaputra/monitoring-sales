@@ -1,3 +1,4 @@
+{{-- Form Tambah Produk Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Tambah Produk')

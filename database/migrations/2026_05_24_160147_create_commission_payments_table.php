@@ -18,21 +18,22 @@ return new class extends Migration
 
             $table->date('tanggal_bayar');
 
-            $table->string('metode')->nullable();
-
-            $table->string('metode_pembayaran')->nullable();
-
             $table->decimal('jumlah', 15, 2);
-
-            $table->string('invoice_id')->nullable();
-
-            $table->string('invoice_payment_url')->nullable();
-
-            $table->string('invoice_status')->nullable();
-
-            $table->string('disbursement_id')->nullable();
-
-            $table->string('disbursement_status')->nullable();
+            $table->string('flip_disbursement_id', 30)->nullable();
+            $table->string('disbursement_status', 20)->nullable();
+            $table->string('account_holder', 100)->nullable();
+            $table->string('bank_code', 30)->nullable();
+            $table->string('account_number', 30)->nullable();
+            $table->string('recipient_name', 100)->nullable();
+            $table->string('sender_bank', 30)->nullable();
+            $table->string('remark', 100)->nullable();
+            $table->string('receipt', 255)->nullable();
+            $table->timestamp('time_served')->nullable();
+            $table->integer('fee')->nullable();
+            $table->string('beneficiary_email', 150)->nullable();
+            $table->string('idempotency_key', 100)->nullable()->unique();
+            $table->string('direction', 30)->nullable();
+            $table->boolean('is_virtual_account')->default(false);
 
             $table->timestamps();
         });

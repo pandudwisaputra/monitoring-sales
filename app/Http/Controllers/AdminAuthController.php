@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+/**
+ * Menangani proses autentikasi (login dan logout) khusus untuk pengguna dengan peran Admin.
+ */
 class AdminAuthController extends Controller
 {
     public function create(): View

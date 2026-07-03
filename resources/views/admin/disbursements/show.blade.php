@@ -1,3 +1,4 @@
+{{-- Detail Pencairan Komisi (Disbursement) Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Disbursement')

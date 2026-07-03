@@ -1,3 +1,4 @@
+{{-- Detail Komisi Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Komisi')

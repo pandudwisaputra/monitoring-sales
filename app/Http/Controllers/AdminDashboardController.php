@@ -12,6 +12,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Menangani tampilan ringkasan data (statistik penjualan, komisi, dll) pada halaman dashboard Admin.
+ */
 class AdminDashboardController extends Controller
 {
     public function index(): View

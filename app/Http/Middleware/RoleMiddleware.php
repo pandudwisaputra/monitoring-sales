@@ -18,7 +18,12 @@ class RoleMiddleware
         }
 
         if (auth()->user()->role != $role) {
-            abort(403);
+            if (auth()->user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } elseif (auth()->user()->role === 'sales') {
+                return redirect()->route('sales.dashboard');
+            }
+            return redirect('/');
         }
 
         return $next($request);

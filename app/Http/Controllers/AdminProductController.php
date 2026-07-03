@@ -7,11 +7,20 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
+/**
+ * Mengelola operasi CRUD (Create, Read, Update, Delete) untuk data produk di panel Admin.
+ */
 class AdminProductController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $products = Product::latest()->paginate(15);
+        $query = Product::query();
+
+        if ($request->filled('search')) {
+            $query->where('nama_produk', 'like', '%' . $request->input('search') . '%');
+        }
+
+        $products = $query->latest()->paginate(15)->appends($request->query());
 
         return view('admin.products.index', compact('products'));
     }

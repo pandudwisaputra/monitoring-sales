@@ -1,3 +1,4 @@
+{{-- Detail Transaksi Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Transaksi #' . $transaction->id)

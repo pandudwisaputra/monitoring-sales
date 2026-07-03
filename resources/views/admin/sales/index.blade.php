@@ -20,6 +20,18 @@
     @endif
 
     <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.sales.index') }}" class="form-inline">
+                <input type="text" name="search" class="form-control mr-2" placeholder="Cari nama atau email..." value="{{ request('search') }}">
+                <button type="submit" class="btn btn-primary mr-2">Filter</button>
+                @if(request()->anyFilled(['search']))
+                    <a href="{{ route('admin.sales.index') }}" class="btn btn-secondary">Reset</a>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Daftar Sales</h6>
         </div>

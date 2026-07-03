@@ -1,3 +1,4 @@
+{{-- Detail Target Sales Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Detail Target')

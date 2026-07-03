@@ -4,19 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Commission;
 use App\Models\CommissionPayment;
-use App\Services\CommissionDisbursementService;
-use App\Services\FlipDisbursementCallbackService;
 use App\Services\FlipPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
 
+/**
+ * Menangani webhook/callback dari pihak ketiga (seperti Flip) untuk memperbarui status pencairan dana secara real-time.
+ */
 class PaymentController extends Controller
 {
     public function __construct(
         private FlipPaymentService $flipService,
-        private CommissionDisbursementService $disbursementService,
-        private FlipDisbursementCallbackService $callbackService,
     ) {
     }
 

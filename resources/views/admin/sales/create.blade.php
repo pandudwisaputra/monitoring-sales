@@ -1,3 +1,4 @@
+{{-- Form Tambah Sales Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Tambah Sales')

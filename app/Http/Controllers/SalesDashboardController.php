@@ -14,17 +14,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+/**
+ * Menangani tampilan ringkasan data, riwayat transaksi individu, dan pencapaian target pada halaman dashboard Sales.
+ */
 class SalesDashboardController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = auth()->user();
 
-        // Transaksi milik sales ini (bulan berjalan)
-        $transactions = SalesTransaction::with(['customer', 'details.product'])
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
+        // Transaksi milik sales ini (dengan filter & pagination)
+        $transactionQuery = SalesTransaction::with(['customer', 'details.product'])
+            ->where('user_id', $user->id);
+
+        if ($request->filled('customer_id')) {
+            $transactionQuery->where('customer_id', $request->input('customer_id'));
+        }
+
+        if ($request->filled('tanggal_transaksi')) {
+            $transactionQuery->whereDate('tanggal_transaksi', $request->input('tanggal_transaksi'));
+        }
+
+        $transactions = $transactionQuery->latest()
+            ->paginate(5, ['*'], 'transactions_page')
+            ->appends($request->query());
 
         // Target bulan ini
         $currentMonth = now()->format('Y-m');
@@ -38,10 +51,16 @@ class SalesDashboardController extends Controller
             ->whereMonth('tanggal_transaksi', now()->month)
             ->sum('total_harga');
 
-        // Komisi milik sales ini
-        $commissions = Commission::where('user_id', $user->id)
-            ->latest()
-            ->get();
+        // Komisi milik sales ini (dengan filter & pagination)
+        $commissionQuery = Commission::where('user_id', $user->id);
+
+        if ($request->filled('status_komisi')) {
+            $commissionQuery->where('status', $request->input('status_komisi'));
+        }
+
+        $commissions = $commissionQuery->latest()
+            ->paginate(5, ['*'], 'commissions_page')
+            ->appends($request->query());
 
         // Data untuk form tambah transaksi
         $customers = Customer::orderBy('nama_customer')->get();

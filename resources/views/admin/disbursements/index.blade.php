@@ -1,3 +1,4 @@
+{{-- Daftar Pencairan Komisi (Disbursement) Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Disbursement')
@@ -27,6 +28,29 @@
             </button>
         </div>
     @endif
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.disbursements.index') }}" class="form-inline">
+                <select name="user_id" class="form-control mr-2">
+                    <option value="">-- Semua Sales --</option>
+                    @foreach($sales as $sale)
+                        <option value="{{ $sale->id }}" {{ request('user_id') == $sale->id ? 'selected' : '' }}>{{ $sale->nama }}</option>
+                    @endforeach
+                </select>
+                <select name="status" class="form-control mr-2">
+                    <option value="">-- Semua Status --</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                    <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed</option>
+                </select>
+                <button type="submit" class="btn btn-primary mr-2">Filter</button>
+                @if(request()->anyFilled(['user_id', 'status']))
+                    <a href="{{ route('admin.disbursements.index') }}" class="btn btn-secondary">Reset</a>
+                @endif
+            </form>
+        </div>
+    </div>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
@@ -80,3 +104,19 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.Echo) {
+            window.Echo.channel('payments')
+                .listen('.payment.success', (e) => {
+                    console.log('Payment success event received', e);
+                    window.location.reload();
+                });
+        }
+    });
+</script>
+@endpush
+
+

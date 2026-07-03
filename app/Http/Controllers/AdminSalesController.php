@@ -8,17 +8,29 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * Mengelola data pengguna dengan peran Sales (pendaftaran, pengubahan data, pengaturan rekening) oleh Admin.
+ */
 class AdminSalesController extends Controller
 {
     public function __construct(private FlipPaymentService $flipService)
     {
     }
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $sales = User::where('role', 'sales')
-            ->withCount('salesTransactions', 'commissions')
-            ->paginate(15);
+        $query = User::where('role', 'sales')
+            ->withCount('salesTransactions', 'commissions');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $sales = $query->latest()->paginate(15)->appends($request->query());
 
         return view('admin.sales.index', compact('sales'));
     }

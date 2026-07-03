@@ -1,3 +1,4 @@
+{{-- Dashboard Sales --}}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -6,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('favicon.PNG') }}">
     <title>Dashboard Sales – Monitoring Sales</title>
 
     <link href="{{ asset('vendor/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
@@ -278,6 +280,25 @@
             </div>
 
             {{-- Daftar Transaksi Terbaru --}}
+            <div class="card shadow-sm border-0 mb-3" style="border-radius: 0.75rem;">
+                <div class="card-body p-3">
+                    <form method="GET" action="{{ route('sales.dashboard') }}" class="form-inline">
+                        <input type="hidden" name="tab" value="dashboard">
+                        <select name="customer_id" class="form-control form-control-sm mr-2 mb-2">
+                            <option value="">-- Semua Pelanggan --</option>
+                            @foreach($customers as $cust)
+                                <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->nama_customer }}</option>
+                            @endforeach
+                        </select>
+                        <input type="date" name="tanggal_transaksi" class="form-control form-control-sm mr-2 mb-2" value="{{ request('tanggal_transaksi') }}">
+                        <button type="submit" class="btn btn-sm btn-primary mr-2 mb-2">Filter</button>
+                        @if(request()->anyFilled(['customer_id', 'tanggal_transaksi']))
+                            <a href="{{ route('sales.dashboard') }}?tab=dashboard" class="btn btn-sm btn-secondary mb-2">Reset</a>
+                        @endif
+                    </form>
+                </div>
+            </div>
+
             <div class="card shadow-sm border-0 mb-4" style="border-radius: 0.75rem; overflow: hidden;">
                 <div class="card-header py-3" style="background:var(--brand);">
                     <h6 class="m-0 font-weight-bold text-white" style="letter-spacing: 0.5px;">
@@ -301,7 +322,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($transactions->take(10) as $trx)
+                                    @foreach ($transactions as $trx)
                                         <tr>
                                             <td class="align-middle text-gray-600">{{ $trx->id }}</td>
                                             <td class="align-middle font-weight-bold text-gray-800">{{ optional($trx->customer)->nama_customer ?? '-' }}</td>
@@ -312,6 +333,9 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="p-3 border-top">
+                            {{ $transactions->links() }}
+                        </div>
                     @endif
                 </div>
             </div>
@@ -321,9 +345,29 @@
         {{-- TAB: KOMISI                               --}}
         {{-- ══════════════════════════════════════════ --}}
         <div class="tab-panel" id="panelKomisi">
-            <h5 class="font-weight-bold mb-3" style="color:var(--brand);">
-                <i class="fas fa-money-bill-wave mr-2"></i>Komisi Saya
-            </h5>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="font-weight-bold mb-0" style="color:var(--brand);">
+                    <i class="fas fa-money-bill-wave mr-2"></i>Komisi Saya
+                </h5>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3" style="border-radius: 0.75rem;">
+                <div class="card-body p-3">
+                    <form method="GET" action="{{ route('sales.dashboard') }}" class="form-inline">
+                        <input type="hidden" name="tab" value="komisi">
+                        <select name="status_komisi" class="form-control form-control-sm mr-2 mb-2">
+                            <option value="">-- Semua Status --</option>
+                            <option value="pending" {{ request('status_komisi') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="paid" {{ request('status_komisi') === 'paid' ? 'selected' : '' }}>Paid</option>
+                            <option value="cancelled" {{ request('status_komisi') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary mr-2 mb-2">Filter</button>
+                        @if(request()->anyFilled(['status_komisi']))
+                            <a href="{{ route('sales.dashboard') }}?tab=komisi" class="btn btn-sm btn-secondary mb-2">Reset</a>
+                        @endif
+                    </form>
+                </div>
+            </div>
 
             @if ($commissions->isEmpty())
                 <div class="text-center text-muted py-5">
@@ -357,6 +401,9 @@
                         </div>
                     </div>
                 @endforeach
+                <div class="mt-3">
+                    {{ $commissions->links() }}
+                </div>
             @endif
         </div>
 
@@ -560,7 +607,38 @@
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
         el.classList.add('active');
+
+        // Simpan state tab aktif di URL parameter (tanpa reload halaman)
+        const url = new URL(window.location);
+        url.searchParams.set('tab', name);
+        window.history.pushState({}, '', url);
     }
+
+    // Auto-switch tab berdasarkan parameter URL saat load
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let activeTab = urlParams.get('tab');
+
+        // Otomatis pindah tab berdasarkan parameter pagination
+        if (urlParams.has('commissions_page')) {
+            activeTab = 'komisi';
+        } else if (urlParams.has('transactions_page')) {
+            activeTab = 'dashboard';
+        }
+
+        if (activeTab) {
+            const btnMap = {
+                'dashboard': 'tabLinkDashboard',
+                'komisi': 'tabLinkKomisi',
+                'transaksi': 'tabLinkTransaksi'
+            };
+            const btnId = btnMap[activeTab];
+            if (btnId) {
+                const btn = document.getElementById(btnId);
+                if (btn) switchTab(activeTab, btn);
+            }
+        }
+    });
 
     // ── Format Rupiah ────────────────────────────────────────
     function formatRp(val) {

@@ -16,9 +16,9 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->string('order_id');
+            $table->string('order_id', 30);
 
-            $table->string('transaction_status');
+            $table->string('transaction_status', 20);
 
             $table->longText('payload');
 

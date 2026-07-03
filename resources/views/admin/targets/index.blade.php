@@ -20,6 +20,24 @@
     @endif
 
     <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.targets.index') }}" class="form-inline">
+                <select name="user_id" class="form-control mr-2">
+                    <option value="">-- Semua Sales --</option>
+                    @foreach($sales as $sale)
+                        <option value="{{ $sale->id }}" {{ request('user_id') == $sale->id ? 'selected' : '' }}>{{ $sale->nama }}</option>
+                    @endforeach
+                </select>
+                <input type="month" name="periode" class="form-control mr-2" value="{{ request('periode') }}">
+                <button type="submit" class="btn btn-primary mr-2">Filter</button>
+                @if(request()->anyFilled(['user_id', 'periode']))
+                    <a href="{{ route('admin.targets.index') }}" class="btn btn-secondary">Reset</a>
+                @endif
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Daftar Target</h6>
         </div>

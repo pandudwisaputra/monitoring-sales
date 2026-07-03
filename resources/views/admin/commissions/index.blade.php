@@ -1,3 +1,4 @@
+{{-- Daftar Komisi Admin --}}
 @extends('layouts.admin')
 
 @section('title', 'Manajemen Komisi')

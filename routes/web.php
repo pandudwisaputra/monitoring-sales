@@ -12,19 +12,20 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/sales/login');
 
-/*
-|--------------------------------------------------------------------------
-| SALES — Web Routes (session-based auth)
-|--------------------------------------------------------------------------
-*/
+// Webhook Flip (Callback)
 
-// Sales Auth (tamu saja)
+Route::prefix('webhook/flip')->group(function () {
+    Route::post('/disbursement', [AdminDisbursementController::class, 'webhookDisbursement'])
+        ->name('webhook.flip.disbursement');
+});
+
+// Rute Sales (Guest)
 Route::middleware('guest')->group(function () {
     Route::get('/sales/login',  [SalesAuthController::class, 'create'])->name('sales.login');
     Route::post('/sales/login', [SalesAuthController::class, 'store'])->name('sales.login.store');
 });
 
-// Sales Protected (harus login sebagai sales)
+// Rute Sales (Authenticated)
 Route::middleware(['auth', 'role:sales'])->group(function () {
     Route::get('/sales/dashboard',   [SalesDashboardController::class, 'index'])->name('sales.dashboard');
     Route::post('/sales/logout',     [SalesAuthController::class, 'destroy'])->name('sales.logout');
@@ -32,17 +33,19 @@ Route::middleware(['auth', 'role:sales'])->group(function () {
     Route::post('/sales/customers',    [SalesDashboardController::class, 'storeCustomer'])->name('sales.customers.store');
 });
 
+// Rute Admin (Guest)
 Route::middleware('guest')->group(function () {
     Route::redirect('/login', '/admin/login')->name('login');
     Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');
     Route::post('/admin/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
 });
 
+// Rute Admin (Authenticated)
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
 
-    // Sales Management
+    // Manajemen Sales
     Route::resource('/admin/sales', AdminSalesController::class, [
         'names' => [
             'index' => 'admin.sales.index',
@@ -55,7 +58,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ],
     ]);
 
-    // Product Management
+    // Manajemen Produk
     Route::resource('/admin/products', App\Http\Controllers\AdminProductController::class, [
         'names' => [
             'index' => 'admin.products.index',
@@ -68,7 +71,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ],
     ]);
 
-    // Disbursement Management
+    // Manajemen Disbursement
     Route::resource('/admin/disbursements', AdminDisbursementController::class, [
         'names' => [
             'index' => 'admin.disbursements.index',
@@ -81,7 +84,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ],
     ]);
 
-    // Target Management
+    // Manajemen Target
     Route::resource('/admin/targets', AdminTargetController::class, [
         'names' => [
             'index' => 'admin.targets.index',
@@ -94,11 +97,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ],
     ]);
 
-    // Generate commission from target (single sales)
+    // Generate komisi sales
     Route::post('/admin/targets/{target}/generate', [App\Http\Controllers\AdminTargetController::class, 'generateCommission'])
         ->name('admin.targets.generate');
 
-    // Transaction Management
+    // Manajemen Transaksi
     Route::resource('/admin/transactions', AdminTransactionController::class, [
         'names' => [
             'index' => 'admin.transactions.index',

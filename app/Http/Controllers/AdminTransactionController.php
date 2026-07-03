@@ -12,15 +12,32 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Mengelola riwayat dan penginputan transaksi penjualan yang dilakukan oleh Sales, serta menghitung komisi secara otomatis.
+ */
 class AdminTransactionController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $transactions = SalesTransaction::with(['customer', 'user', 'details.product'])
-            ->latest()
-            ->paginate(15);
+        $query = SalesTransaction::with(['customer', 'user', 'details.product']);
 
-        return view('admin.transactions.index', compact('transactions'));
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->input('customer_id'));
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal_transaksi', $request->input('tanggal'));
+        }
+
+        $transactions = $query->latest()->paginate(15)->appends($request->query());
+        $sales = User::where('role', 'sales')->orderBy('nama')->get();
+        $customers = Customer::orderBy('nama_customer')->get();
+
+        return view('admin.transactions.index', compact('transactions', 'sales', 'customers'));
     }
 
     public function create(): View
