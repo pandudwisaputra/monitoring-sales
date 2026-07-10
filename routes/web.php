@@ -11,6 +11,7 @@ use App\Http\Controllers\SalesDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/sales/login');
+Route::redirect('/sales', '/sales/login');
 
 // Webhook Flip (Callback)
 

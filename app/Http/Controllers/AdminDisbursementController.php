@@ -157,18 +157,8 @@ class AdminDisbursementController extends Controller
         return redirect()->route('admin.disbursements.index')->with('success', 'Disbursement berhasil dihapus');
     }
 
-    // =========================================================================
-    // WEBHOOK DISBURSEMENT — Terima callback status transfer dari Flip
-    // =========================================================================
-
-    /**
-     * Flip POST ke sini ketika status transfer berubah ke DONE atau CANCELLED.
-     * Content-Type: application/x-www-form-urlencoded
-     * Body: token, data (JSON string)
-     *
-     * Daftarkan URL di Flip dashboard:
-     *   POST https://your-domain.com/webhook/flip/disbursement
-     */
+    // Webhook callback status transfer dari Flip.
+    // POST /webhook/flip/disbursement
     public function webhookDisbursement(Request $request): JsonResponse
     {
         // Verifikasi token dari Flip
@@ -244,15 +234,8 @@ class AdminDisbursementController extends Controller
         return response()->json(['message' => 'OK'], 200);
     }
 
-    // =========================================================================
-    // CHECK DISBURSEMENT — Polling status manual (fallback jika webhook miss)
-    // =========================================================================
-
-    /**
-     * Cek status disbursement langsung dari Flip.
-     *
-     * GET /admin/disbursements/{disbursementId}/check
-     */
+    // Cek status disbursement manual langsung dari Flip.
+    // GET /admin/disbursements/{disbursementId}/check
     public function checkDisbursement(string $disbursementId): JsonResponse
     {
         try {
