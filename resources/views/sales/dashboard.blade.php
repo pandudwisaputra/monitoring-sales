@@ -280,25 +280,6 @@
             </div>
 
             {{-- Daftar Transaksi Terbaru --}}
-            <div class="card shadow-sm border-0 mb-3" style="border-radius: 0.75rem;">
-                <div class="card-body p-3">
-                    <form method="GET" action="{{ route('sales.dashboard') }}" class="form-inline">
-                        <input type="hidden" name="tab" value="dashboard">
-                        <select name="customer_id" class="form-control form-control-sm mr-2 mb-2">
-                            <option value="">-- Semua Pelanggan --</option>
-                            @foreach($customers as $cust)
-                                <option value="{{ $cust->id }}" {{ request('customer_id') == $cust->id ? 'selected' : '' }}>{{ $cust->nama_customer }}</option>
-                            @endforeach
-                        </select>
-                        <input type="date" name="tanggal_transaksi" class="form-control form-control-sm mr-2 mb-2" value="{{ request('tanggal_transaksi') }}">
-                        <button type="submit" class="btn btn-sm btn-primary mr-2 mb-2">Filter</button>
-                        @if(request()->anyFilled(['customer_id', 'tanggal_transaksi']))
-                            <a href="{{ route('sales.dashboard') }}?tab=dashboard" class="btn btn-sm btn-secondary mb-2">Reset</a>
-                        @endif
-                    </form>
-                </div>
-            </div>
-
             <div class="card shadow-sm border-0 mb-4" style="border-radius: 0.75rem; overflow: hidden;">
                 <div class="card-header py-3" style="background:var(--brand);">
                     <h6 class="m-0 font-weight-bold text-white" style="letter-spacing: 0.5px;">
