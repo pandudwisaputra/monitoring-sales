@@ -23,21 +23,14 @@ class SalesDashboardController extends Controller
     {
         $user = auth()->user();
 
-        // Transaksi milik sales ini (dengan filter & pagination)
-        $transactionQuery = SalesTransaction::with(['customer', 'details.product'])
-            ->where('user_id', $user->id);
-
-        if ($request->filled('customer_id')) {
-            $transactionQuery->where('customer_id', $request->input('customer_id'));
-        }
-
-        if ($request->filled('tanggal_transaksi')) {
-            $transactionQuery->whereDate('tanggal_transaksi', $request->input('tanggal_transaksi'));
-        }
-
-        $transactions = $transactionQuery->latest()
+        // Transaksi milik sales ini (dengan pagination)
+        $transactions = SalesTransaction::with(['customer', 'details.product'])
+            ->where('user_id', $user->id)
+            ->latest()
             ->paginate(5, ['*'], 'transactions_page')
             ->appends($request->query());
+
+        $totalTransaksi = SalesTransaction::where('user_id', $user->id)->count();
 
         // Target bulan ini
         $currentMonth = now()->format('Y-m');
@@ -89,6 +82,7 @@ class SalesDashboardController extends Controller
         return view('sales.dashboard', compact(
             'user',
             'transactions',
+            'totalTransaksi',
             'target',
             'totalPenjualan',
             'commissions',

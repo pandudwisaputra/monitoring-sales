@@ -188,7 +188,7 @@
                 <div class="col-12 mb-3">
                     <div class="stat-card">
                         <div class="label">Total Transaksi</div>
-                        <div class="value">{{ $transactions->count() }}</div>
+                        <div class="value">{{ $totalTransaksi }}</div>
                         <div class="hint">Semua periode</div>
                     </div>
                 </div>
