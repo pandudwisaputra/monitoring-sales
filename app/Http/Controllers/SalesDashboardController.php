@@ -58,6 +58,10 @@ class SalesDashboardController extends Controller
             $commissionQuery->where('status', $request->input('status_komisi'));
         }
 
+        if ($request->filled('periode_komisi')) {
+            $commissionQuery->where('periode', $request->input('periode_komisi'));
+        }
+
         $commissions = $commissionQuery->latest()
             ->paginate(5, ['*'], 'commissions_page')
             ->appends($request->query());

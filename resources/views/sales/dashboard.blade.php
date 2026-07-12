@@ -355,14 +355,17 @@
                 <div class="card-body p-3">
                     <form method="GET" action="{{ route('sales.dashboard') }}" class="form-inline">
                         <input type="hidden" name="tab" value="komisi">
+                        <input type="month" name="periode_komisi" class="form-control form-control-sm mr-2 mb-2" value="{{ request('periode_komisi') }}">
                         <select name="status_komisi" class="form-control form-control-sm mr-2 mb-2">
                             <option value="">-- Semua Status --</option>
                             <option value="pending" {{ request('status_komisi') === 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="paid" {{ request('status_komisi') === 'paid' ? 'selected' : '' }}>Paid</option>
                             <option value="cancelled" {{ request('status_komisi') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
-                        <button type="submit" class="btn btn-sm btn-primary mr-2 mb-2">Filter</button>
-                        @if(request()->anyFilled(['status_komisi']))
+                        <button type="submit" class="btn btn-sm btn-primary mr-2 mb-2">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        @if(request()->anyFilled(['status_komisi', 'periode_komisi']))
                             <a href="{{ route('sales.dashboard') }}?tab=komisi" class="btn btn-sm btn-secondary mb-2">Reset</a>
                         @endif
                     </form>
