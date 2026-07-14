@@ -51,7 +51,7 @@ class AdminDisbursementController extends Controller
         $commissions = Commission::with('user')
             ->where('status', 'pending')
             ->whereDoesntHave('payments', function ($query) {
-                $query->whereIn('disbursement_status', ['pending', 'completed']);
+                $query->whereIn('disbursement_status', ['pending', 'paid']);
             })
             ->latest()
             ->get();
@@ -142,7 +142,7 @@ class AdminDisbursementController extends Controller
             'jumlah'              => ['required', 'numeric', 'min:0'],
             'account_holder'      => ['nullable', 'string', 'max:255'],
             'fee'                 => ['nullable', 'numeric', 'min:0'],
-            'disbursement_status' => ['required', 'in:pending,completed,failed'],
+            'disbursement_status' => ['required', 'in:pending,paid,failed,cancelled'],
         ]);
 
         $disbursement->update($validated);
@@ -196,8 +196,8 @@ class AdminDisbursementController extends Controller
 
         // Map status Flip ke status aplikasi
         $newStatus = match (strtoupper($payload['status'] ?? 'PENDING')) {
-            'DONE'      => 'completed',
-            'CANCELLED' => 'failed',
+            'DONE'      => 'paid',
+            'CANCELLED' => 'cancelled',
             default     => 'pending',
         };
 
@@ -221,7 +221,7 @@ class AdminDisbursementController extends Controller
             $payment->update($attributes);
 
             $commission = $payment->commission;
-            if ($newStatus === 'completed') {
+            if ($newStatus === 'paid') {
                 $commission?->update(['status' => 'paid']);
                 if ($commission) {
                     event(new PaymentSuccess($commission));

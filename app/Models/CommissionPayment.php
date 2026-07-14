@@ -54,11 +54,19 @@ class CommissionPayment extends Model
     }
 
     /**
-     * Scope: Completed disbursements
+     * Scope: Paid disbursements
      */
-    public function scopeCompleted($query)
+    public function scopePaid($query)
     {
-        return $query->where('disbursement_status', 'completed');
+        return $query->where('disbursement_status', 'paid');
+    }
+
+    /**
+     * Scope: Cancelled disbursements
+     */
+    public function scopeCancelled($query)
+    {
+        return $query->where('disbursement_status', 'cancelled');
     }
 
     /**
@@ -78,11 +86,19 @@ class CommissionPayment extends Model
     }
 
     /**
-     * Check if payment is completed
+     * Check if payment is paid
      */
-    public function isCompleted(): bool
+    public function isPaid(): bool
     {
-        return $this->disbursement_status === 'completed';
+        return $this->disbursement_status === 'paid';
+    }
+
+    /**
+     * Check if payment is cancelled
+     */
+    public function isCancelled(): bool
+    {
+        return $this->disbursement_status === 'cancelled';
     }
 
     /**

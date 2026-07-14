@@ -41,8 +41,9 @@
                 <select name="status" class="form-control mr-2">
                     <option value="">-- Semua Status --</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                    <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Paid</option>
                     <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
                 <button type="submit" class="btn btn-primary mr-2">Filter</button>
                 @if(request()->anyFilled(['user_id', 'status']))

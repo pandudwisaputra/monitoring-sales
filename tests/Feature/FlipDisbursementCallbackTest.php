@@ -74,7 +74,7 @@ it('updates payment and commission when flip disbursement callback is DONE', fun
 
     $payment->refresh();
 
-    expect($payment->disbursement_status)->toBe('completed')
+    expect($payment->disbursement_status)->toBe('paid')
         ->and($payment->recipient_name)->toBe('Yudi Pratama')
         ->and($payment->receipt)->toBe('https://flip.id/receipt/308308')
         ->and($payment->fee)->toBe(1998)
@@ -135,5 +135,5 @@ it('finds payment by idempotency key when flip id is missing locally', function 
     $payment->refresh();
 
     expect($payment->flip_disbursement_id)->toBe('999999')
-        ->and($payment->disbursement_status)->toBe('completed');
+        ->and($payment->disbursement_status)->toBe('paid');
 });

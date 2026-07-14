@@ -43,8 +43,9 @@
                     <label for="disbursement_status">Status Disbursement</label>
                     <select name="disbursement_status" id="disbursement_status" class="form-control @error('disbursement_status') is-invalid @enderror" required>
                         <option value="pending" {{ old('disbursement_status', $disbursement->disbursement_status) === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="completed" {{ old('disbursement_status', $disbursement->disbursement_status) === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="paid" {{ old('disbursement_status', $disbursement->disbursement_status) === 'paid' ? 'selected' : '' }}>Paid</option>
                         <option value="failed" {{ old('disbursement_status', $disbursement->disbursement_status) === 'failed' ? 'selected' : '' }}>Failed</option>
+                        <option value="cancelled" {{ old('disbursement_status', $disbursement->disbursement_status) === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                     @error('disbursement_status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>

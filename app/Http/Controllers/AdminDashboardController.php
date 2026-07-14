@@ -38,7 +38,7 @@ class AdminDashboardController extends Controller
                 ],
                 [
                     'label' => 'Komisi Dibayar',
-                    'value' => CommissionPayment::completed()->count(),
+                    'value' => CommissionPayment::paid()->count(),
                     'hint' => 'Disbursement selesai',
                 ],
                 [
