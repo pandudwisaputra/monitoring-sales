@@ -113,6 +113,7 @@
         .table th { font-size:.78rem; text-transform:uppercase; color:#858796; }
         .badge-pending    { background:#fff3cd; color:#856404; }
         .badge-paid       { background:#d1e7dd; color:#0f5132; }
+        .badge-disbursed  { background:#cfe2ff; color:#0a58ca; }
         .badge-cancelled  { background:#f8d7da; color:#842029; }
 
         /* ── Transaksi Item ── */
@@ -340,6 +341,7 @@
                         <select name="status_komisi" class="form-control form-control-sm mr-2 mb-2">
                             <option value="">-- Semua Status --</option>
                             <option value="pending" {{ request('status_komisi') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="disbursed" {{ request('status_komisi') === 'disbursed' ? 'selected' : '' }}>Disbursed</option>
                             <option value="paid" {{ request('status_komisi') === 'paid' ? 'selected' : '' }}>Paid</option>
                             <option value="cancelled" {{ request('status_komisi') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
@@ -364,6 +366,7 @@
                     @php
                         $badgeClass = match($kom->status) {
                             'paid'      => 'badge-paid',
+                            'disbursed' => 'badge-disbursed',
                             'cancelled' => 'badge-cancelled',
                             default     => 'badge-pending',
                         };
