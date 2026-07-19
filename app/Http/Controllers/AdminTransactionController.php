@@ -184,4 +184,13 @@ class AdminTransactionController extends Controller
             ->route('admin.transactions.index')
             ->with('success', 'Transaksi berhasil dihapus');
     }
+
+    public function export(Request $request)
+    {
+        return (new \App\Exports\TransactionsExport(
+            $request->input('user_id'),
+            $request->input('customer_id'),
+            $request->input('tanggal')
+        ))->download('Data_Transaksi_Penjualan_'.date('Ymd_His').'.xlsx');
+    }
 }

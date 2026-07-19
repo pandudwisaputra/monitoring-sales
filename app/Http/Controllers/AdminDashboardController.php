@@ -79,4 +79,24 @@ class AdminDashboardController extends Controller
                 ->get(),
         ]);
     }
+
+    public function exportDisbursements()
+    {
+        return (new \App\Exports\DisbursementsExport)->download('Data_Pencairan_'.date('Ymd_His').'.xlsx');
+    }
+
+    public function exportSales()
+    {
+        return (new \App\Exports\SalesExport)->download('Data_Sales_'.date('Ymd_His').'.xlsx');
+    }
+
+    public function exportCustomers()
+    {
+        return (new \App\Exports\CustomersExport)->download('Data_Customer_'.date('Ymd_His').'.xlsx');
+    }
+
+    public function exportTargets()
+    {
+        return (new \App\Exports\TargetsExport)->download('Data_Target_'.date('Ymd_His').'.xlsx');
+    }
 }

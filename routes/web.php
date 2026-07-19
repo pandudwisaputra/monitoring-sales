@@ -44,6 +44,10 @@ Route::middleware('guest')->group(function () {
 // Rute Admin (Authenticated)
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/export/disbursements', [AdminDashboardController::class, 'exportDisbursements'])->name('admin.export.disbursements');
+    Route::get('/admin/export/sales', [AdminDashboardController::class, 'exportSales'])->name('admin.export.sales');
+    Route::get('/admin/export/customers', [AdminDashboardController::class, 'exportCustomers'])->name('admin.export.customers');
+    Route::get('/admin/export/targets', [AdminDashboardController::class, 'exportTargets'])->name('admin.export.targets');
     Route::post('/admin/logout', [AdminAuthController::class, 'destroy'])->name('admin.logout');
 
     // Manajemen Sales
@@ -116,6 +120,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         ->name('admin.targets.generate');
 
     // Manajemen Transaksi
+    Route::get('/admin/transactions/export', [AdminTransactionController::class, 'export'])->name('admin.transactions.export');
     Route::resource('/admin/transactions', AdminTransactionController::class, [
         'names' => [
             'index' => 'admin.transactions.index',

@@ -6,6 +6,18 @@
 @section('content')
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">Dashboard Admin</h1>
+        <div class="dropdown">
+            <button class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm dropdown-toggle" type="button" id="exportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-file-excel fa-sm text-white-50"></i> Export Semua Data
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="exportDropdown">
+                <a class="dropdown-item" href="{{ route('admin.transactions.export') }}">Data Transaksi</a>
+                <a class="dropdown-item" href="{{ route('admin.export.disbursements') }}">Data Pencairan</a>
+                <a class="dropdown-item" href="{{ route('admin.export.sales') }}">Data Sales</a>
+                <a class="dropdown-item" href="{{ route('admin.export.customers') }}">Data Customer</a>
+                <a class="dropdown-item" href="{{ route('admin.export.targets') }}">Data Target & Komisi</a>
+            </div>
+        </div>
     </div>
 
     <div class="row">
